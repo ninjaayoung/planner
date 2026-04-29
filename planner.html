@@ -757,19 +757,26 @@ function renderQuests() {
     wrap.appendChild(cv);
     setTimeout(function() { drawChar(cv, ci, color, 3); }, 50);
 
-    // 터치: 꾹 누르면 말풍선
+    // 터치: 짧게 탭 → 말풍선, 길게 누르기 → 캐릭터 선택
     let pt;
+    let isLong = false;
     wrap.addEventListener('touchstart', function() {
-      pt = setTimeout(function() { bubble.classList.add('show'); }, 300);
+      isLong = false;
+      pt = setTimeout(function() {
+        isLong = true;
+        openCharPicker();
+      }, 500);
     }, {passive: true});
     wrap.addEventListener('touchend', function() {
       clearTimeout(pt);
-      setTimeout(function() { bubble.classList.remove('show'); }, 1500);
+      if (!isLong) {
+        bubble.classList.add('show');
+        setTimeout(function() { bubble.classList.remove('show'); }, 1500);
+      }
     });
-    // 마우스: 올리면 말풍선
+    // 마우스: 올리면 말풍선, 클릭하면 캐릭터 선택
     wrap.addEventListener('mouseenter', function() { bubble.classList.add('show'); });
     wrap.addEventListener('mouseleave', function() { bubble.classList.remove('show'); });
-    // 클릭: 캐릭터 선택창
     wrap.addEventListener('click', function() { openCharPicker(); });
 
     con.appendChild(wrap);
