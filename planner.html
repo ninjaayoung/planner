@@ -274,7 +274,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#FFFFFF}
 .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:1.5px solid transparent;transition:border-color .15s,transform .15s;flex-shrink:0}
 .color-dot.sel{border-color:var(--g700);transform:scale(1.15);opacity:1;}
 .color-dot:not(.sel){opacity:.85;}
-.sheet-submit{width:100%;background:var(--purple-d);color:white;border:none;border-radius:4px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.rpt-day-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--g200);background:white;color:var(--g600);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;flex-shrink:0}
+.rpt-day-btn.on{background:var(--g900);border-color:var(--g900);color:white}
+.rpt-date-btn{width:28px;height:28px;border-radius:4px;border:1px solid var(--g200);background:white;color:var(--g600);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.rpt-date-btn.on{background:var(--g900);border-color:var(--g900);color:white}
+.sheet-submit{width:100%;background:var(--g900);color:white;border:none;border-radius:4px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 
 /* 캐릭터 모달 */
 .char-picker-modal{display:none;position:fixed;inset:0;z-index:500;align-items:flex-end}
@@ -510,11 +514,30 @@ html,body{width:100%;height:100%;overflow:hidden;background:#FFFFFF}
       <div class="field">
         <div class="field-lbl">반복</div>
         <div class="rpt-btns">
-          <button class="rpt-btn on" onclick="setRpt(this)">없음</button>
-          <button class="rpt-btn off" onclick="setRpt(this)">매일</button>
-          <button class="rpt-btn off" onclick="setRpt(this)">매주</button>
-          <button class="rpt-btn off" onclick="setRpt(this)">매월</button>
-          <button class="rpt-btn off" onclick="setRpt(this)">매년</button>
+          <button class="rpt-btn on" onclick="setRpt(this,'none')">없음</button>
+          <button class="rpt-btn off" onclick="setRpt(this,'daily')">매일</button>
+          <button class="rpt-btn off" onclick="setRpt(this,'weekly')">매주</button>
+          <button class="rpt-btn off" onclick="setRpt(this,'monthly')">매월</button>
+          <button class="rpt-btn off" onclick="setRpt(this,'yearly')">매년</button>
+        </div>
+        <!-- 매주: 요일 선택 -->
+        <div id="rpt-weekly" style="display:none;margin-top:8px">
+          <div style="font-size:10px;color:var(--g400);margin-bottom:5px">반복 요일 선택 (다중선택)</div>
+          <div style="display:flex;gap:5px">
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="0">일</button>
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="1">월</button>
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="2">화</button>
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="3">수</button>
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="4">목</button>
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="5">금</button>
+            <button class="rpt-day-btn" onclick="togRptDay(this)" data-day="6">토</button>
+          </div>
+        </div>
+        <!-- 매월: 날짜 선택 -->
+        <div id="rpt-monthly" style="display:none;margin-top:8px">
+          <div style="font-size:10px;color:var(--g400);margin-bottom:5px">반복 날짜 선택 (다중선택)</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap" id="rpt-dates">
+          </div>
         </div>
       </div>
 
@@ -539,14 +562,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:#FFFFFF}
       <div class="field">
         <div class="field-lbl">색상</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap" id="color-btns">
-          <div class="color-dot sel" onclick="setColor(this)" style="background:#F9A8C4" data-color="#F9A8C4"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#F472A8" data-color="#F472A8"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#E05A8A" data-color="#E05A8A"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#C9446E" data-color="#C9446E"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#A090F0" data-color="#A090F0"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#70BFFF" data-color="#70BFFF"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#7DD6B0" data-color="#7DD6B0"></div>
-          <div class="color-dot" onclick="setColor(this)" style="background:#FFB347" data-color="#FFB347"></div>
+          <div class="color-dot sel" onclick="setColor(this)" style="background:#ea5e76" data-color="#ea5e76"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#e3c9b5" data-color="#e3c9b5"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#f9d877" data-color="#f9d877"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#a5cbf0" data-color="#a5cbf0"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#92cbdc" data-color="#92cbdc"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ceddf2" data-color="#ceddf2"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#fad3cf" data-color="#fad3cf"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#fee1d1" data-color="#fee1d1"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ffd0e2" data-color="#ffd0e2"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ffe1e1" data-color="#ffe1e1"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ffd0f2" data-color="#ffd0f2"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ffe0f2" data-color="#ffe0f2"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ffd1ff" data-color="#ffd1ff"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#ffe2fe" data-color="#ffe2fe"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#cfd0fe" data-color="#cfd0fe"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#d1e2ff" data-color="#d1e2ff"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#d0cff6" data-color="#d0cff6"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#cfe2f1" data-color="#cfe2f1"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#d1d0e0" data-color="#d1d0e0"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#d4dfe2" data-color="#d4dfe2"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#d0d0d0" data-color="#d0d0d0"></div>
+          <div class="color-dot" onclick="setColor(this)" style="background:#d0e1d2" data-color="#d0e1d2"></div>
         </div>
       </div>
 
@@ -1121,8 +1158,8 @@ function goSettings(page){
 
 // 캘린더 탭 + → 일정만
 function openAddEvent() {
+  addContext='cal';
   openAdd();
-  // 타입 선택 UI 숨기기 (일정만)
   var labelEl=document.querySelector('.sheet-body > div:first-child');
   if(labelEl) labelEl.style.display='none';
   document.querySelector('.type-btns').style.display='none';
@@ -1131,16 +1168,15 @@ function openAddEvent() {
 
 // 할일·타임 탭 + → 타임블록 or 할일
 function openAddTodo() {
+  addContext='todo';
   openAdd();
-  // 버튼 텍스트 변경
   document.getElementById('tb-event').textContent='⏱ 타임블록';
-  document.getElementById('tb-event').onclick=function(){setType('event');};
+  document.getElementById('tb-event').onclick=function(){setType('timeblock');};
   document.getElementById('tb-todo-btn').textContent='✅ 할 일';
-  setType('todo'); // 기본값: 할 일
-  // 타임블록은 캘린더에 표시 안 함 (일정과 구분)
+  setType('todo');
 }
 var addType='event', selColor='#F9A8C4', selPriority='보통', selCategory='';
-var editingId=null, editingType=null;
+var editingId=null, editingType=null, addContext='cal';
 
 function openAdd(){
   document.getElementById('add-bg').classList.add('open');
@@ -1163,7 +1199,12 @@ function openAdd(){
   document.querySelector('.type-btns').style.display='';
   setType('event');
   document.getElementById('add-dday').checked=false;
-  selColor='#F9A8C4'; selPriority='보통'; selCategory=categories[0]?categories[0].name:'';
+  document.getElementById('rpt-weekly').style.display='none';
+  document.getElementById('rpt-monthly').style.display='none';
+  document.querySelectorAll('.rpt-day-btn').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.rpt-date-btn').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.rpt-btn').forEach(function(b,i){b.className='rpt-btn '+(i===0?'on':'off');});
+  selColor='#ea5e76'; selPriority='보통'; selCategory=categories[0]?categories[0].name:'';
   document.querySelectorAll('.color-dot').forEach(function(d,i){d.classList.toggle('sel',i===0);});
 }
 function closeAdd(){document.getElementById('add-bg').classList.remove('open');document.getElementById('add-sheet').classList.remove('open');}
@@ -1177,7 +1218,26 @@ function setType(t){
   document.getElementById('date-wrap-todo').style.display=t==='todo'?'flex':'none';
 }
 function togNoTime(cb){document.querySelectorAll('#time-wrap input[type="time"]').forEach(function(i){i.disabled=cb.checked;i.style.opacity=cb.checked?'0.3':'1';});}
-function setRpt(btn){document.querySelectorAll('.rpt-btn').forEach(function(b){b.className='rpt-btn off';});btn.className='rpt-btn on';}
+function setRpt(btn, type){
+  document.querySelectorAll('.rpt-btn').forEach(function(b){b.className='rpt-btn off';});
+  btn.className='rpt-btn on';
+  // 세부 선택 표시/숨김
+  document.getElementById('rpt-weekly').style.display = type==='weekly' ? 'block' : 'none';
+  document.getElementById('rpt-monthly').style.display = type==='monthly' ? 'block' : 'none';
+  // 매월 날짜 버튼 생성 (처음 한 번만)
+  if(type==='monthly' && !document.getElementById('rpt-dates').children.length) {
+    var wrap = document.getElementById('rpt-dates');
+    for(var i=1; i<=31; i++){
+      var b = document.createElement('button');
+      b.className = 'rpt-date-btn';
+      b.textContent = i;
+      b.setAttribute('data-date', i);
+      b.onclick = function(){this.classList.toggle('on');};
+      wrap.appendChild(b);
+    }
+  }
+}
+function togRptDay(btn){ btn.classList.toggle('on'); }
 function setPri(btn){
   document.querySelectorAll('#pri-btns .sel-btn').forEach(function(b){b.style.borderColor='var(--g200)';b.style.background='white';b.style.color='var(--g600)';});
   var map={'긴급':'#FFE4E4,#C0506E','높음':'#FFF3E0,#9B5800','보통':'#F3F0FF,#534AB7','낮음':'#F0FBF6,#2E7D5A'};
@@ -1223,7 +1283,8 @@ function submitAdd(){
   var te=document.getElementById('te').value;
   var rpt=document.querySelector('.rpt-btn.on');
   var rptVal=rpt?rpt.textContent:'없음';
-  if(addType==='event'){
+  if(addType==='event' && addContext==='cal'){
+    // 일정 → 캘린더에 표시
     if(!dateStart){alert('시작일을 선택해주세요');return;}
     if(!dateEnd) dateEnd=dateStart;
     var cur=new Date(dateStart), end=new Date(dateEnd);
@@ -1239,9 +1300,11 @@ function submitAdd(){
       cur.setDate(cur.getDate()+1);
     }
   } else {
+    // 타임블록 or 할일 → 캘린더에 미표시
     if(!date){alert('날짜를 선택해주세요');return;}
     todos.push({id:genId(),title:title,date:date,startTime:noTime?'':ts,endTime:noTime?'':te,
-      noTime:noTime,color:selColor,repeat:rptVal,priority:selPriority,done:false,type:'todo'});
+      noTime:noTime,color:selColor,repeat:rptVal,priority:selPriority,done:false,
+      type:addType==='timeblock'?'timeblock':'todo'});
   }
   saveAll();
   var btn=document.querySelector('.sheet-submit');
