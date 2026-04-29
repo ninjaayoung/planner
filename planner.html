@@ -469,8 +469,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#F9F8FD}
         <button class="type-btn off" id="tb-todo-btn" onclick="setType('todo')">✅ 할 일</button>
       </div>
       <div class="field"><div class="field-lbl">제목</div><input class="field-inp" id="add-title" placeholder="제목을 입력하세요"/></div>
-      <div style="display:flex;gap:8px;margin-bottom:13px">
+      <div style="display:flex;gap:8px;margin-bottom:13px" id="date-wrap-event">
+        <div style="flex:1"><div class="field-lbl">시작일</div><input class="field-inp" id="add-date-start" type="date"/></div>
+        <div style="flex:1"><div class="field-lbl">마감일</div><input class="field-inp" id="add-date-end" type="date"/></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:13px;display:none" id="date-wrap-todo">
         <div style="flex:1"><div class="field-lbl">날짜</div><input class="field-inp" id="add-date" type="date"/></div>
+      </div>
         <div style="flex:1.2" id="time-wrap">
           <div class="field-lbl">시간</div>
           <div class="time-row"><input class="time-inp" id="ts" type="time"/><span style="font-size:11px;color:var(--g400)">~</span><input class="time-inp" id="te" type="time"/></div>
@@ -627,9 +632,12 @@ function renderCal() {
       if (dayEvs.length) {
         var bd=document.createElement('div'); bd.className='bars';
         dayEvs.slice(0,2).forEach(function(ev) {
-          var b=document.createElement('div'); b.className='bar single';
-          b.style.background=ev.color+'33'; b.style.color=ev.color;
-          b.textContent=ev.title; bd.appendChild(b);
+          var b=document.createElement('div');
+          var bt=ev.barType||'single';
+          b.className='bar '+bt;
+          b.style.background=ev.color+'44'; b.style.color=ev.color;
+          b.textContent=(bt==='start'||bt==='single')?ev.title:'';
+          bd.appendChild(b);
         });
         cell.appendChild(bd);
       }
@@ -750,12 +758,18 @@ function drawChar(canvas,ci,color,sz) {
 // 퀘스트: 현재 달 마감 이벤트 중 D-30 이내
 function getQuests() {
   var now=new Date(); now.setHours(0,0,0,0);
+  var seen={};
   return events.filter(function(e){
-    var d=new Date(e.date); d.setHours(0,0,0,0);
+    // 마감일 기준, 중복 제거 (같은 장기 일정은 한 번만)
+    var endDate=e.endDate||e.date;
+    var key=e.title+endDate;
+    if(seen[key])return false;
+    seen[key]=true;
+    var d=new Date(endDate); d.setHours(0,0,0,0);
     var diff=Math.ceil((d-now)/86400000);
-    var em=parseInt(e.date.split('-')[1]);
+    var em=parseInt(endDate.split('-')[1]);
     return em===curM && diff>=0 && diff<=30;
-  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  }).sort(function(a,b){return new Date(a.endDate||a.date)-new Date(b.endDate||b.date);});
 }
 
 function ddayColor(d){if(d<=3)return'#FF8FAB';if(d<=7)return'#FFB347';if(d<=14)return'#A090F0';return'#7DD6B0';}
@@ -765,7 +779,8 @@ function renderQuests() {
   var now=new Date(); now.setHours(0,0,0,0);
   var qs=getQuests();
   qs.forEach(function(ev,i){
-    var d=new Date(ev.date); d.setHours(0,0,0,0);
+    var endDate=ev.endDate||ev.date;
+    var d=new Date(endDate); d.setHours(0,0,0,0);
     var diff=Math.ceil((d-now)/86400000);
     var color=ev.color||ddayColor(diff), ci=(curChar+i)%CHARS.length;
     var wrap=document.createElement('div'); wrap.className='char-wrap';
@@ -1007,7 +1022,12 @@ function openAdd(){
   document.getElementById('add-bg').classList.add('open');
   document.getElementById('add-sheet').classList.add('open');
   var t=new Date();
-  document.getElementById('add-date').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  var today=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+  document.getElementById('add-date-start').value=today;
+  document.getElementById('add-date-end').value=today;
+  document.getElementById('add-date').value=today;
+  // 기본 타입 일정으로
+  setType('event');
   selColor='#F9A8C4'; selPriority='보통'; selCategory=categories[0]?categories[0].name:'';
   document.querySelectorAll('.color-dot').forEach(function(d,i){d.classList.toggle('sel',i===0);});
 }
@@ -1018,6 +1038,8 @@ function setType(t){
   document.getElementById('tb-todo-btn').className='type-btn '+(t==='todo'?'on':'off');
   document.getElementById('pri-wrap').style.display=t==='todo'?'block':'none';
   document.getElementById('cat-wrap').style.display=t==='event'?'block':'none';
+  document.getElementById('date-wrap-event').style.display=t==='event'?'flex':'none';
+  document.getElementById('date-wrap-todo').style.display=t==='todo'?'flex':'none';
 }
 function togNoTime(cb){document.querySelectorAll('#time-wrap input[type="time"]').forEach(function(i){i.disabled=cb.checked;i.style.opacity=cb.checked?'0.3':'1';});}
 function setRpt(btn){document.querySelectorAll('.rpt-btn').forEach(function(b){b.className='rpt-btn off';});btn.className='rpt-btn on';}
@@ -1042,19 +1064,32 @@ function submitAdd(){
   var title=document.getElementById('add-title').value.trim();
   if(!title){document.getElementById('add-title').style.borderColor='var(--pink)';document.getElementById('add-title').focus();return;}
   var date=document.getElementById('add-date').value;
-  if(!date){alert('날짜를 선택해주세요');return;}
+  var dateStart=document.getElementById('add-date-start').value;
+  var dateEnd=document.getElementById('add-date-end').value;
   var noTime=document.getElementById('no-time').checked;
   var ts=document.getElementById('ts').value;
   var te=document.getElementById('te').value;
   var rpt=document.querySelector('.rpt-btn.on');
   var rptVal=rpt?rpt.textContent:'없음';
-  var item={id:genId(),title:title,date:date,startTime:noTime?'':ts,endTime:noTime?'':te,noTime:noTime,color:selColor,repeat:rptVal};
   if(addType==='event'){
-    item.type='event'; item.category=selCategory;
-    events.push(item);
+    if(!dateStart){alert('시작일을 선택해주세요');return;}
+    if(!dateEnd) dateEnd=dateStart;
+    // 시작일~마감일 사이 날짜에 이벤트 등록
+    var cur=new Date(dateStart), end=new Date(dateEnd);
+    var isMulti=dateStart!==dateEnd;
+    while(cur<=end){
+      var dk=dateKey(cur.getFullYear(),cur.getMonth()+1,cur.getDate());
+      var isStart=dk===dateStart, isEnd=cur.toISOString().slice(0,10)===dateEnd;
+      events.push({id:genId(),title:title,date:dk,startDate:dateStart,endDate:dateEnd,
+        startTime:noTime?'':ts,endTime:noTime?'':te,noTime:noTime,
+        color:selColor,repeat:rptVal,type:'event',category:selCategory,
+        barType:isMulti?(isStart?'start':isEnd?'end':'mid'):'single'});
+      cur.setDate(cur.getDate()+1);
+    }
   } else {
-    item.type='todo'; item.priority=selPriority; item.done=false;
-    todos.push(item);
+    if(!date){alert('날짜를 선택해주세요');return;}
+    todos.push({id:genId(),title:title,date:date,startTime:noTime?'':ts,endTime:noTime?'':te,
+      noTime:noTime,color:selColor,repeat:rptVal,priority:selPriority,done:false,type:'todo'});
   }
   saveAll();
   var btn=document.querySelector('.sheet-submit');
