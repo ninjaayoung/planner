@@ -270,8 +270,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#F9F8FD}
 .rpt-btn.off{border:1.5px solid var(--g200);background:white;color:var(--g600)}
 .sel-btns{display:flex;gap:6px;flex-wrap:wrap}
 .sel-btn{padding:7px 12px;border-radius:4px;border:1.5px solid var(--g200);background:white;color:var(--g600);font-size:12px;font-weight:600;cursor:pointer}
-.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s;flex-shrink:0}
-.color-dot.sel{border-color:var(--g700)}
+.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:1.5px solid transparent;transition:border-color .15s,transform .15s;flex-shrink:0}
+.color-dot.sel{border-color:var(--g700);transform:scale(1.15);opacity:1;}
+.color-dot:not(.sel){opacity:.85;}
 .sheet-submit{width:100%;background:var(--purple-d);color:white;border:none;border-radius:4px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
 
 /* 캐릭터 모달 */
@@ -463,25 +464,45 @@ html,body{width:100%;height:100%;overflow:hidden;background:#F9F8FD}
   <div class="add-sheet" id="add-sheet">
     <div class="sheet-handle-row" onclick="closeAdd()"><div class="sheet-handle"></div></div>
     <div class="sheet-body">
-      <div style="font-size:11px;font-weight:700;color:var(--g400);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">무엇을 추가할까요?</div>
+      <div style="font-size:11px;font-weight:700;color:var(--g400);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">무엇을 추가할까요?</div>
       <div class="type-btns">
         <button class="type-btn on" id="tb-event" onclick="setType('event')">📅 일정</button>
         <button class="type-btn off" id="tb-todo-btn" onclick="setType('todo')">✅ 할 일</button>
       </div>
+
+      <!-- 제목 -->
       <div class="field"><div class="field-lbl">제목</div><input class="field-inp" id="add-title" placeholder="제목을 입력하세요"/></div>
+
+      <!-- 일정: 시작일 + 마감일 -->
       <div style="display:flex;gap:8px;margin-bottom:13px" id="date-wrap-event">
         <div style="flex:1"><div class="field-lbl">시작일</div><input class="field-inp" id="add-date-start" type="date"/></div>
         <div style="flex:1"><div class="field-lbl">마감일</div><input class="field-inp" id="add-date-end" type="date"/></div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:13px;display:none" id="date-wrap-todo">
-        <div style="flex:1"><div class="field-lbl">날짜</div><input class="field-inp" id="add-date" type="date"/></div>
+
+      <!-- 할일: 날짜 -->
+      <div style="margin-bottom:13px;display:none" id="date-wrap-todo">
+        <div class="field-lbl">날짜</div><input class="field-inp" id="add-date" type="date"/>
       </div>
-        <div style="flex:1.2" id="time-wrap">
-          <div class="field-lbl">시간</div>
-          <div class="time-row"><input class="time-inp" id="ts" type="time"/><span style="font-size:11px;color:var(--g400)">~</span><input class="time-inp" id="te" type="time"/></div>
-          <label class="no-time-lbl"><input type="checkbox" id="no-time" onchange="togNoTime(this)"/> 시간 미지정</label>
-        </div>
+
+      <!-- 시간 -->
+      <div style="margin-bottom:13px" id="time-wrap">
+        <div class="field-lbl">시간</div>
+        <div class="time-row"><input class="time-inp" id="ts" type="time"/><span style="font-size:11px;color:var(--g400)">~</span><input class="time-inp" id="te" type="time"/></div>
+        <label class="no-time-lbl"><input type="checkbox" id="no-time" onchange="togNoTime(this)"/> 시간 미지정</label>
       </div>
+
+      <!-- D-day 표시 (일정만) -->
+      <div style="margin-bottom:13px" id="dday-wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 12px;background:white;border:.5px solid var(--g200);border-radius:4px;">
+          <input type="checkbox" id="add-dday" style="accent-color:var(--g700);width:15px;height:15px;"/>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--g900)">D-day 표시</div>
+            <div style="font-size:11px;color:var(--g400);margin-top:1px">캘린더 상단에 캐릭터와 함께 카운트다운 표시</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- 반복 -->
       <div class="field">
         <div class="field-lbl">반복</div>
         <div class="rpt-btns">
@@ -492,6 +513,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#F9F8FD}
           <button class="rpt-btn off" onclick="setRpt(this)">매년</button>
         </div>
       </div>
+
+      <!-- 우선순위 (할일만) -->
       <div class="field" id="pri-wrap" style="display:none">
         <div class="field-lbl">우선순위</div>
         <div class="sel-btns" id="pri-btns">
@@ -501,10 +524,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#F9F8FD}
           <button class="sel-btn" onclick="setPri(this)">낮음</button>
         </div>
       </div>
+
+      <!-- 카테고리 (일정만) -->
       <div class="field" id="cat-wrap">
         <div class="field-lbl">카테고리</div>
         <div class="sel-btns" id="cat-sel-btns"></div>
       </div>
+
+      <!-- 색상 -->
       <div class="field">
         <div class="field-lbl">색상</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap" id="color-btns">
@@ -518,6 +545,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#F9F8FD}
           <div class="color-dot" onclick="setColor(this)" style="background:#FFB347" data-color="#FFB347"></div>
         </div>
       </div>
+
       <button class="sheet-submit" onclick="submitAdd()">등록하기</button>
     </div>
   </div>
@@ -760,15 +788,14 @@ function getQuests() {
   var now=new Date(); now.setHours(0,0,0,0);
   var seen={};
   return events.filter(function(e){
-    // 마감일 기준, 중복 제거 (같은 장기 일정은 한 번만)
+    if(!e.dday) return false; // D-day 체크한 것만
     var endDate=e.endDate||e.date;
     var key=e.title+endDate;
     if(seen[key])return false;
     seen[key]=true;
     var d=new Date(endDate); d.setHours(0,0,0,0);
     var diff=Math.ceil((d-now)/86400000);
-    var em=parseInt(endDate.split('-')[1]);
-    return em===curM && diff>=0 && diff<=30;
+    return diff>=0 && diff<=30;
   }).sort(function(a,b){return new Date(a.endDate||a.date)-new Date(b.endDate||b.date);});
 }
 
@@ -1028,6 +1055,7 @@ function openAdd(){
   document.getElementById('add-date').value=today;
   // 기본 타입 일정으로
   setType('event');
+  document.getElementById('add-dday').checked=false;
   selColor='#F9A8C4'; selPriority='보통'; selCategory=categories[0]?categories[0].name:'';
   document.querySelectorAll('.color-dot').forEach(function(d,i){d.classList.toggle('sel',i===0);});
 }
@@ -1083,6 +1111,7 @@ function submitAdd(){
       events.push({id:genId(),title:title,date:dk,startDate:dateStart,endDate:dateEnd,
         startTime:noTime?'':ts,endTime:noTime?'':te,noTime:noTime,
         color:selColor,repeat:rptVal,type:'event',category:selCategory,
+        dday:document.getElementById('add-dday').checked,
         barType:isMulti?(isStart?'start':isEnd?'end':'mid'):'single'});
       cur.setDate(cur.getDate()+1);
     }
